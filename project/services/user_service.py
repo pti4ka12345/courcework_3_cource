@@ -44,7 +44,7 @@ class UserService(BaseService):
         if user_pass:
             data_in["password"] = generate_password_digest(user_pass)
         user = UserDAO(self._db_session).create(data_in)
-        return UserSchema(many=True).dump(user)
+        return UserSchema().dump(user)
 
     def update(self, data_in):
         user = UserDAO(self._db_session).update(data_in)

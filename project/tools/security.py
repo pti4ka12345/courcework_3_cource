@@ -8,6 +8,7 @@ import jwt
 from flask import current_app, request
 from flask_restx import abort
 
+from coursework_3_source.project.config import BaseConfig
 from coursework_3_source.project.constants import JWT_SECRET, JWT_ALGORITM, PWD_HASH_SALT, PWD_HASH_ITERATIONS
 from coursework_3_source.project.exceptions import ItemNotFound
 
@@ -16,8 +17,8 @@ def generate_password_digest(password):
     return hashlib.pbkdf2_hmac(
         hash_name="sha256",
         password=password.encode("utf-8"),
-        salt=PWD_HASH_SALT,
-        iterations=PWD_HASH_ITERATIONS,
+        salt=BaseConfig.PWD_HASH_SALT,
+        iterations=BaseConfig.PWD_HASH_ITERATIONS,
         # salt=current_app.config["PWD_HASH_SALT"],
         # iterations=current_app.config["PWD_HASH_ITERATIONS"],
     )
