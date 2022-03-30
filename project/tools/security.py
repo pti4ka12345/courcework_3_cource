@@ -5,23 +5,26 @@ import hashlib
 import hmac
 
 import jwt
-from flask import current_app, request
+from flask import request, current_app
 from flask_restx import abort
+from typing import Union
 
 from coursework_3_source.project.config import BaseConfig
-from coursework_3_source.project.constants import JWT_SECRET, JWT_ALGORITM, PWD_HASH_SALT, PWD_HASH_ITERATIONS
+from coursework_3_source.project.constants import JWT_SECRET, JWT_ALGORITM
 from coursework_3_source.project.exceptions import ItemNotFound
 
 
-def generate_password_digest(password):
+def __generate_password_digest(password: str) -> bytes:
     return hashlib.pbkdf2_hmac(
-        hash_name="sha256",
-        password=password.encode("utf-8"),
+        hash_name='sha256',
+        password=password.encode('utf-8'),
         salt=BaseConfig.PWD_HASH_SALT,
         iterations=BaseConfig.PWD_HASH_ITERATIONS,
-        # salt=current_app.config["PWD_HASH_SALT"],
-        # iterations=current_app.config["PWD_HASH_ITERATIONS"],
     )
+
+
+def generate_password_hash(password: str) -> str:
+    return base64.b64encode(__generate_password_digest(password)).decode('utf-8')
 
 
 def generate_token(data):
@@ -34,10 +37,9 @@ def generate_token(data):
     return {'access_token': access_token, 'refresh_token': refresh_token}
 
 
-def compare_password(password_hash, other_password):
+def compare_passwords(password_hash: Union[str, bytes], password: str):
     return hmac.compare_digest(
-        base64.b64decode(password_hash),
-        hashlib.pbkdf2_hmac('sha256', other_password.encode('utf-8'), PWD_HASH_SALT, PWD_HASH_ITERATIONS))
+        base64.b64decode(password_hash), __generate_password_digest(password))
 
 
 def login_user(req_json, user):
@@ -47,7 +49,7 @@ def login_user(req_json, user):
         pass_hashed = user["password"]
         req_json["role"] = user["role"]
         req_json["id"] = user["id"]
-        if compare_password(pass_hashed, user_pass):
+        if compare_passwords(pass_hashed, user_pass):
             return generate_token(req_json)
     raise ItemNotFound
 

@@ -9,7 +9,7 @@ from coursework_3_source.project.dao.models.user import UserSchema
 from coursework_3_source.project.dao.user import UserDAO
 from coursework_3_source.project.exceptions import ItemNotFound
 from coursework_3_source.project.services.base import BaseService
-from coursework_3_source.project.tools.security import generate_password_digest
+from coursework_3_source.project.tools.security import generate_password_hash
 
 
 class UserService(BaseService):
@@ -42,7 +42,7 @@ class UserService(BaseService):
     def create(self, data_in):
         user_pass = data_in.get("password")
         if user_pass:
-            data_in["password"] = generate_password_digest(user_pass)
+            data_in["password"] = generate_password_hash(user_pass)
         user = UserDAO(self._db_session).create(data_in)
         return UserSchema().dump(user)
 
