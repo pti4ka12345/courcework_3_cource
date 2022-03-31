@@ -5,41 +5,47 @@ import hashlib
 import hmac
 
 import jwt
-from flask import request, current_app
+from flask import request
 from flask_restx import abort
-from typing import Union
 
 from coursework_3_source.project.config import BaseConfig
-from coursework_3_source.project.constants import JWT_SECRET, JWT_ALGORITM
 from coursework_3_source.project.exceptions import ItemNotFound
 
 
-def __generate_password_digest(password: str) -> bytes:
-    return hashlib.pbkdf2_hmac(
-        hash_name='sha256',
-        password=password.encode('utf-8'),
-        salt=BaseConfig.PWD_HASH_SALT,
-        iterations=BaseConfig.PWD_HASH_ITERATIONS,
-    )
-
-
-def generate_password_hash(password: str) -> str:
-    return base64.b64encode(__generate_password_digest(password)).decode('utf-8')
+def generate_password_hash(password):
+    hash_digest = hashlib.pbkdf2_hmac('sha256',
+                                      password.encode('utf-8'),
+                                      BaseConfig.PWD_HASH_SALT,
+                                      BaseConfig.PWD_HASH_ITERATIONS,
+                                      )
+    return base64.b64encode(hash_digest)
 
 
 def generate_token(data):
     min30 = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
     data["exp"] = calendar.timegm(min30.timetuple())
-    access_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITM)
+    access_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
     days130 = datetime.datetime.utcnow() + datetime.timedelta(days=130)
     data["exp"] = calendar.timegm(days130.timetuple())
-    refresh_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITM)
+    refresh_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
     return {'access_token': access_token, 'refresh_token': refresh_token}
 
 
-def compare_passwords(password_hash: Union[str, bytes], password: str):
-    return hmac.compare_digest(
-        base64.b64decode(password_hash), __generate_password_digest(password))
+def get_id_from_token():
+    data = request.headers["Authorization"]
+    token = data.split("Bearer")[-1]
+    user_data = jwt.decode(token, BaseConfig.SECRET_KEY, algorithms=[BaseConfig.JWT_ALGORITHM])
+    return user_data.get('id')
+
+
+def compare_passwords(password_hash, entered_password):
+    decoded_digest = base64.b64decode(password_hash)
+    hash_digest = hashlib.pbkdf2_hmac('sha256',
+                                      entered_password.encode('utf-8'),
+                                      BaseConfig.PWD_HASH_SALT,
+                                      BaseConfig.PWD_HASH_ITERATIONS,
+                                      )
+    return hmac.compare_digest(decoded_digest, hash_digest)
 
 
 def login_user(req_json, user):
@@ -72,7 +78,7 @@ def auth_check():
 
 def jwt_decode(token):
     try:
-        decoded_jwt = jwt.decode(token, JWT_SECRET, JWT_ALGORITM)
+        decoded_jwt = jwt.decode(token, BaseConfig.SECRET_KEY, BaseConfig.JWT_ALGORITHM)
     except:
         return False
     else:

@@ -4,7 +4,7 @@ import hashlib
 from flask import current_app
 from sqlalchemy.orm import scoped_session
 
-from coursework_3_source.project.constants import PWD_HASH_SALT, PWD_HASH_ITERATIONS
+
 from coursework_3_source.project.dao.models.user import UserSchema
 from coursework_3_source.project.dao.user import UserDAO
 from coursework_3_source.project.exceptions import ItemNotFound
@@ -57,8 +57,4 @@ class UserService(BaseService):
         # return UserSchema().dump(user)
 
 
-def get_hash(password):
-    return base64.b64encode(hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'),
-                                                PWD_HASH_SALT,
-                                                PWD_HASH_ITERATIONS
-                                                ))
+

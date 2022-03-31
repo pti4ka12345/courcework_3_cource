@@ -17,8 +17,8 @@ class AuthView(Resource):
         if not req_json:
             abort(400, message='Bad Request')
         try:
-            user = UserService(db.session).get_item_by_email(email=request.json.get("email"))
-            tokens = login_user(request.json, user)
+            user = UserService(db.session).get_item_by_email(email=req_json.get("email"))
+            tokens = login_user(req_json, user)
             return tokens, 200
         except ItemNotFound:
             abort(401, message="Authorization Error")
@@ -27,10 +27,11 @@ class AuthView(Resource):
         req_json = request.json
         if not req_json:
             abort(400, message='Bad Request')
-        tokens = refresh_user_token(req_json)
-        if tokens:
+        try:
+            tokens = refresh_user_token(req_json)
             return tokens, 200
-        abort(401, message="Authorization Error")
+        except ItemNotFound:
+            abort(401, message="Authorization Error")
 
 
 @auth_ns.route('/register/')
