@@ -1,8 +1,8 @@
 from flask_restx import abort, Namespace, Resource
 
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.directors_service import DirectorsService
-from coursework_3_source.project.setup_db import db
+from project.exceptions import ItemNotFound
+from project.services.directors_service import DirectorsService
+from project.setup_db import db
 
 directors_ns = Namespace("directors")
 

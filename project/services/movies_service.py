@@ -1,10 +1,10 @@
 from flask import current_app
 from sqlalchemy.orm import scoped_session
 
-from coursework_3_source.project.dao.models.movie import MovieSchema
-from coursework_3_source.project.dao.movie import MovieDAO
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.base import BaseService
+from project.dao.models.movie import MovieSchema
+from project.dao.movie import MovieDAO
+from project.exceptions import ItemNotFound
+from project.services.base import BaseService
 
 
 class MoviesService(BaseService):

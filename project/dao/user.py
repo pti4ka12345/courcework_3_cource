@@ -1,6 +1,6 @@
 from sqlalchemy.orm.scoping import scoped_session
 
-from coursework_3_source.project.dao.models.user import User
+from project.dao.models.user import User
 
 
 class UserDAO:
@@ -41,8 +41,6 @@ class UserDAO:
         self._db_session.commit()
         return obj
 
-    def get_limit(self, limit, offset):
-        pass
 
     def get_limit(self, limit, offset):
         if limit > 0:

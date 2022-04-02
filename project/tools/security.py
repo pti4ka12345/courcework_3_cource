@@ -5,18 +5,17 @@ import hashlib
 import hmac
 
 import jwt
-from flask import request
+from flask import request, current_app
 from flask_restx import abort
 
-from coursework_3_source.project.config import BaseConfig
-from coursework_3_source.project.exceptions import ItemNotFound
+from project.exceptions import ItemNotFound
 
 
 def generate_password_hash(password):
-    hash_digest = hashlib.pbkdf2_hmac('sha256',
-                                      password.encode('utf-8'),
-                                      BaseConfig.PWD_HASH_SALT,
-                                      BaseConfig.PWD_HASH_ITERATIONS,
+    hash_digest = hashlib.pbkdf2_hmac(hash_name='sha256',
+                                      password=password.encode('utf-8'),
+                                      salt=current_app.config["PWD_HASH_SALT"],
+                                      iterations=current_app.config["PWD_HASH_ITERATIONS"],
                                       )
     return base64.b64encode(hash_digest)
 
@@ -24,26 +23,26 @@ def generate_password_hash(password):
 def generate_token(data):
     min30 = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
     data["exp"] = calendar.timegm(min30.timetuple())
-    access_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
+    access_token = jwt.encode(data, current_app.config["SECRET_KEY"], algorithm=current_app.config['JWT_ALGORITHM'])
     days130 = datetime.datetime.utcnow() + datetime.timedelta(days=130)
     data["exp"] = calendar.timegm(days130.timetuple())
-    refresh_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
+    refresh_token = jwt.encode(data, current_app.config["SECRET_KEY"], algorithm=current_app.config["JWT_ALGORITHM"])
     return {'access_token': access_token, 'refresh_token': refresh_token}
 
 
 def get_id_from_token():
     data = request.headers["Authorization"]
     token = data.split("Bearer")[-1]
-    user_data = jwt.decode(token, BaseConfig.SECRET_KEY, algorithms=[BaseConfig.JWT_ALGORITHM])
+    user_data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=[current_app.config["JWT_ALGORITHM"]])
     return user_data.get('id')
 
 
 def compare_passwords(password_hash, entered_password):
     decoded_digest = base64.b64decode(password_hash)
-    hash_digest = hashlib.pbkdf2_hmac('sha256',
-                                      entered_password.encode('utf-8'),
-                                      BaseConfig.PWD_HASH_SALT,
-                                      BaseConfig.PWD_HASH_ITERATIONS,
+    hash_digest = hashlib.pbkdf2_hmac(hash_name='sha256',
+                                      password=entered_password.encode('utf-8'),
+                                      salt=current_app.config["PWD_HASH_SALT"],
+                                      iterations=current_app.config["PWD_HASH_ITERATIONS"],
                                       )
     return hmac.compare_digest(decoded_digest, hash_digest)
 
@@ -78,7 +77,7 @@ def auth_check():
 
 def jwt_decode(token):
     try:
-        decoded_jwt = jwt.decode(token, BaseConfig.SECRET_KEY, BaseConfig.JWT_ALGORITHM)
+        decoded_jwt = jwt.decode(token, current_app.config["SECRET_KEY"], current_app.config["JWT_ALGORITHM"])
     except:
         return False
     else:
@@ -103,4 +102,4 @@ def admin_required(func):
                 return func(*args, **kwargs)
         abort(401, "Admin role required")
 
-    return wrapper
+    return

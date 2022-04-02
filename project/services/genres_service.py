@@ -1,7 +1,7 @@
-from coursework_3_source.project.dao.genre import GenreDAO
-from coursework_3_source.project.dao.models.genre import GenreSchema
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.base import BaseService
+from project.dao.genre import GenreDAO
+from project.dao.models.genre import GenreSchema
+from project.exceptions import ItemNotFound
+from project.services.base import BaseService
 
 
 class GenresService(BaseService):

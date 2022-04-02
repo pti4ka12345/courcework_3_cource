@@ -1,7 +1,7 @@
-from coursework_3_source.project.dao.director import DirectorDAO
-from coursework_3_source.project.dao.models.director import DirectorSchema
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.base import BaseService
+from project.dao.director import DirectorDAO
+from project.dao.models.director import DirectorSchema
+from project.exceptions import ItemNotFound
+from project.services.base import BaseService
 
 
 class DirectorsService(BaseService):

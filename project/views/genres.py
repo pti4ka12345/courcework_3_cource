@@ -1,8 +1,8 @@
 from flask_restx import abort, Namespace, Resource
 
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.genres_service import GenresService
-from coursework_3_source.project.setup_db import db
+from project.exceptions import ItemNotFound
+from project.services.genres_service import GenresService
+from project.setup_db import db
 
 genres_ns = Namespace("genres")
 
@@ -25,5 +25,3 @@ class GenreView(Resource):
             return GenresService(db.session).get_item_by_id(genre_id)
         except ItemNotFound:
             abort(404, message="Genre not found")
-
-

@@ -1,10 +1,10 @@
 from flask import request
 from flask_restx import Namespace, Resource, abort
 
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.user_service import UserService
-from coursework_3_source.project.setup_db import db
-from coursework_3_source.project.tools.security import login_user, refresh_user_token
+from project.exceptions import ItemNotFound
+from project.services.user_service import UserService
+from project.setup_db import db
+from project.tools.security import login_user, refresh_user_token
 
 auth_ns = Namespace('auth')
 

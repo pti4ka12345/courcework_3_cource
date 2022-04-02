@@ -1,15 +1,12 @@
-import base64
-import hashlib
-
 from flask import current_app
 from sqlalchemy.orm import scoped_session
 
 
-from coursework_3_source.project.dao.models.user import UserSchema
-from coursework_3_source.project.dao.user import UserDAO
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.base import BaseService
-from coursework_3_source.project.tools.security import generate_password_hash
+from project.dao.models.user import UserSchema
+from project.dao.user import UserDAO
+from project.exceptions import ItemNotFound
+from project.services.base import BaseService
+from project.tools.security import generate_password_hash, compare_passwords
 
 
 class UserService(BaseService):
@@ -53,8 +50,9 @@ class UserService(BaseService):
     def update_pass(self, data_in):
         user_pass_1 = data_in.get("password_1")
         user_pass_2 = data_in.get("password_2")
-        # user_pass_1 = UserDAO(self._db_session).update(data_in)
-        # return UserSchema().dump(user)
-
-
-
+        user = UserDAO(self._db_session).get_by_id(data_in)
+        if compare_passwords(user.password, user_pass_1):
+            user.password = generate_password_hash(user_pass_2)
+            update_user = UserDAO(self._db_session).update(user)
+            return UserSchema().dump(update_user)
+        return None
