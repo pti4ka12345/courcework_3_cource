@@ -15,28 +15,33 @@ class UserService(BaseService):
         self.dao = None
 
     def get_item_by_id(self, pk):
+        """
+        Получение пользователя по id
+        :param pk: id пользователя
+        :return: данные пользователя в формате json
+        """
         user = UserDAO(self._db_session).get_by_id(pk)
         if not user:
             raise ItemNotFound
         return UserSchema().dump(user)
 
     def get_item_by_email(self, email):
+        """
+        Получение пользователя по email
+        :param email: email пользователя
+        :return: данные пользователя в формате json
+        """
         user = UserDAO(self._db_session).get_by_email(email)
         if not user:
             raise ItemNotFound
         return UserSchema().dump(user)
 
-    def get_all_users(self):
-        users = UserDAO(self._db_session).get_all()
-        return UserSchema(many=True).dump(users)
-
-    def get_limit_users(self):
-        limit = current_app.config["ITEMS_PER_PAGE"]
-        offset = ("page" - 1) * limit
-        users = UserDAO(self._db_session).get_limit(limit=limit, offset=offset)
-        return UserSchema(many=True).dump(users)
-
     def create(self, data_in):
+        """
+        Создает нового пользователя
+        :param data_in: полученные данные для нового пользователя
+        :return: нового пользователя
+        """
         user_pass = data_in.get("password")
         if user_pass:
             data_in["password"] = generate_password_hash(user_pass)
@@ -44,10 +49,19 @@ class UserService(BaseService):
         return UserSchema().dump(user)
 
     def update(self, data_in):
+        """
+        Изменение пользователя
+        :param data_in: данные которые необходимо изменить
+        :return: Новые данные пользователя, с учетом изменений
+        """
         user = UserDAO(self._db_session).update(data_in)
         return UserSchema().dump(user)
 
     def update_pass(self, data_in):
+        """
+        Изменение пароля
+        :return: Новые данные пользователя, с учетом изменений
+        """
         user_pass_1 = data_in.get("password_1")
         user_pass_2 = data_in.get("password_2")
         user = UserDAO(self._db_session).get_by_id(data_in)
