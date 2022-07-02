@@ -1,7 +1,7 @@
 from sqlalchemy import desc
 from sqlalchemy.orm.scoping import scoped_session
 
-from coursework_3_source.project.dao.models.movie import Movie
+from project.dao.models.movie import Movie
 
 
 class MovieDAO:

@@ -1,6 +1,6 @@
 from sqlalchemy.orm.scoping import scoped_session
 
-from coursework_3_source.project.dao.models.genre import Genre
+from project.dao.models.genre import Genre
 
 
 class GenreDAO:

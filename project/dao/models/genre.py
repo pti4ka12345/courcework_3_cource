@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
-from coursework_3_source.project.dao.models.base import BaseMixin
-from coursework_3_source.project.setup_db import db
+from project.dao.models.base import BaseMixin
+from project.setup_db import db
 
 
 class Genre(BaseMixin, db.Model):

@@ -1,10 +1,10 @@
 from flask import current_app
 from sqlalchemy.orm import scoped_session
 
-from coursework_3_source.project.dao.models.movie import MovieSchema
-from coursework_3_source.project.dao.movie import MovieDAO
-from coursework_3_source.project.exceptions import ItemNotFound
-from coursework_3_source.project.services.base import BaseService
+from project.dao.models.movie import MovieSchema
+from project.dao.movie import MovieDAO
+from project.exceptions import ItemNotFound
+from project.services.base import BaseService
 
 
 class MoviesService(BaseService):
@@ -13,16 +13,29 @@ class MoviesService(BaseService):
         self.dao = None
 
     def get_item_by_id(self, pk):
+        """
+        Получение фильма по id
+        :param pk: id фильма
+        :return: данные о фильме в формате json
+        """
         movie = MovieDAO(self._db_session).get_by_id(pk)
         if not movie:
             raise ItemNotFound
         return MovieSchema().dump(movie)
 
     def get_all_movies(self):
+        """
+        Получение всех фильмов
+        :return: все фильмы в json формате
+        """
         movies = MovieDAO(self._db_session).get_all()
         return MovieSchema(many=True).dump(movies)
 
     def get_filter_movies(self, filters):
+        """
+        Получение фильмов постранично
+        :return: фильмы в json формате по странице
+        """
         limit = 0
         offset = 0
         if filters.get("page"):

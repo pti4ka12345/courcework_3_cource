@@ -5,62 +5,92 @@ import hashlib
 import hmac
 
 import jwt
-from flask import request
+from flask import request, current_app
 from flask_restx import abort
 
-from coursework_3_source.project.config import BaseConfig
-from coursework_3_source.project.exceptions import ItemNotFound
+from project.exceptions import ItemNotFound
 
 
 def generate_password_hash(password):
-    hash_digest = hashlib.pbkdf2_hmac('sha256',
-                                      password.encode('utf-8'),
-                                      BaseConfig.PWD_HASH_SALT,
-                                      BaseConfig.PWD_HASH_ITERATIONS,
+    """
+    Хэширование пароля
+    Return: Закодированный пароль
+    :param password: пароль пользователя
+    :return: Закодированный пароль
+    """
+    hash_digest = hashlib.pbkdf2_hmac(hash_name='sha256',
+                                      password=password.encode('utf-8'),
+                                      salt=current_app.config["PWD_HASH_SALT"],
+                                      iterations=current_app.config["PWD_HASH_ITERATIONS"],
                                       )
     return base64.b64encode(hash_digest)
 
 
 def generate_token(data):
+    """
+    Создание access и refresh токена
+    :param data: время истечения токена
+    :return: access и refresh токен
+    """
     min30 = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-    data["exp"] = calendar.timegm(min30.timetuple())
-    access_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
+    data['exp'] = calendar.timegm(min30.timetuple())
+    access_token = jwt.encode(data, current_app.config["SECRET_KEY"], current_app.config['JWT_ALGORITHM'])
     days130 = datetime.datetime.utcnow() + datetime.timedelta(days=130)
-    data["exp"] = calendar.timegm(days130.timetuple())
-    refresh_token = jwt.encode(data, BaseConfig.SECRET_KEY, algorithm=BaseConfig.JWT_ALGORITHM)
+    data['exp'] = calendar.timegm(days130.timetuple())
+    refresh_token = jwt.encode(data, current_app.config["SECRET_KEY"], current_app.config["JWT_ALGORITHM"])
     return {'access_token': access_token, 'refresh_token': refresh_token}
 
 
 def get_id_from_token():
+    """
+    Получение id авторизированного пользователя из токена
+    :return: id авторизированного пользователя из токена
+    """
     data = request.headers["Authorization"]
     token = data.split("Bearer")[-1]
-    user_data = jwt.decode(token, BaseConfig.SECRET_KEY, algorithms=[BaseConfig.JWT_ALGORITHM])
+    user_data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=[current_app.config["JWT_ALGORITHM"]])
     return user_data.get('id')
 
 
 def compare_passwords(password_hash, entered_password):
+    """
+    Сравнивнение паролей
+    :param password_hash: Пароль пользователя сохраненный в базе
+    :param entered_password: Пароль, который вводит пользователь при авторизации
+    :return: Return результат сравнения паролей
+    """
     decoded_digest = base64.b64decode(password_hash)
-    hash_digest = hashlib.pbkdf2_hmac('sha256',
-                                      entered_password.encode('utf-8'),
-                                      BaseConfig.PWD_HASH_SALT,
-                                      BaseConfig.PWD_HASH_ITERATIONS,
+    hash_digest = hashlib.pbkdf2_hmac(hash_name='sha256',
+                                      password=entered_password.encode('utf-8'),
+                                      salt=current_app.config["PWD_HASH_SALT"],
+                                      iterations=current_app.config["PWD_HASH_ITERATIONS"],
                                       )
     return hmac.compare_digest(decoded_digest, hash_digest)
 
 
 def login_user(req_json, user):
+    """
+    Авторизация пользователя
+    :param req_json:данные введенные пользователем в формате json
+    :param user:данные пользователя из БД
+    :return: access и refresh токена, или False если имя или пароль не найдены
+    """
     user_email = req_json.get("email")
     user_pass = req_json.get("password")
     if user_email and user_pass:
-        pass_hashed = user["password"]
-        req_json["role"] = user["role"]
-        req_json["id"] = user["id"]
+        pass_hashed = user['password']
+        req_json['role'] = user['role']
+        req_json['id'] = user['id']
         if compare_passwords(pass_hashed, user_pass):
             return generate_token(req_json)
     raise ItemNotFound
 
 
 def refresh_user_token(req_json):
+    """
+    Обновление пары access и refresh токена
+    :return: новые сгенерированные access и refresh токен
+    """
     refresh_token = req_json.get("refresh_token")
     data = jwt_decode(refresh_token)
     if data:
@@ -70,6 +100,10 @@ def refresh_user_token(req_json):
 
 
 def auth_check():
+    """
+    Проверка авторизации пользователя
+    :return: если пользователь авторизированный возвращается токен
+    """
     if "Authorization" not in request.headers:
         return False
     token = request.headers["Authorization"].split("Bearer ")[-1]
@@ -77,8 +111,13 @@ def auth_check():
 
 
 def jwt_decode(token):
+    """
+    Проверка актуальности токена
+    :param token: токен пользователя
+    :return:декодированный токен
+    """
     try:
-        decoded_jwt = jwt.decode(token, BaseConfig.SECRET_KEY, BaseConfig.JWT_ALGORITHM)
+        decoded_jwt = jwt.decode(token, current_app.config["SECRET_KEY"], current_app.config["JWT_ALGORITHM"])
     except:
         return False
     else:
@@ -86,6 +125,9 @@ def jwt_decode(token):
 
 
 def auth_required(func):
+    """
+    Проверка роли
+    """
     def wrapper(*args, **kwargs):
         if auth_check():
             return func(*args, **kwargs)
@@ -94,13 +136,3 @@ def auth_required(func):
     return wrapper
 
 
-def admin_required(func):
-    def wrapper(*args, **kwargs):
-        decoded_jwt = auth_check()
-        if decoded_jwt:
-            role = decoded_jwt.get("role")
-            if role == "admin":
-                return func(*args, **kwargs)
-        abort(401, "Admin role required")
-
-    return wrapper

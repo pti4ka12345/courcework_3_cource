@@ -1,6 +1,6 @@
 from sqlalchemy.orm.scoping import scoped_session
 
-from coursework_3_source.project.dao.models.user import User
+from project.dao.models.user import User
 
 
 class UserDAO:
@@ -12,9 +12,6 @@ class UserDAO:
 
     def get_by_email(self, email):
         return self._db_session.query(User).filter(User.email == email).one_or_none()
-
-    def get_all(self):
-        return self._db_session.query(User).all()
 
     def create(self, data_in):
         obj = User(**data_in)
@@ -41,9 +38,4 @@ class UserDAO:
         self._db_session.commit()
         return obj
 
-    def get_limit(self, limit, offset):
-        pass
 
-    def get_limit(self, limit, offset):
-        if limit > 0:
-            return self._db_session.query(User).limit(limit).offset(offset).all()

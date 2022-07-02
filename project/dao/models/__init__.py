@@ -1,5 +1,3 @@
-from lib2to3.pytree import Base
-
 from .director import Director
 from .genre import Genre
 from .user import User
@@ -10,5 +8,4 @@ __all__ = [
     "Director",
     "Movie",
     "User",
-    "Base"
-       ]
+           ]
