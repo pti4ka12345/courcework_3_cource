@@ -3,7 +3,7 @@ version: "3.9"
 services:
   app:
     image:
-      pti4ka12345/flask-app-test:version-1
+      pti4ka12345/flask_app_test:version-1
     ports:
       - 8080:80
     volumes:
