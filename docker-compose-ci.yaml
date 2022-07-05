@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  app:
+    image:
+      pti4ka12345/flask-app-test:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    ports:
+      - 8080:80
+    volumes:
+      - ./docker_config.py:/code/default_config.py
+  migrations:
+    image: pti4ka12345/flask-app-test:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    volumes:
+        - ./docker_config.py:/code/default_config.py
+    command: flask db upgrade
