@@ -8,8 +8,11 @@ jobs:
         uses: actions/checkout@v2
       - name: docker build
         run: docker build -t pti4ka12345/flask-app-test:$GITHUB_REF_NAME-$GITHUB_RUN_ID .
-      - name: docker login
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdi
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: docker push
         run: docker push pti4ka12345/flask-app-test:$GITHUB_REF_NAME-$GITHUB_RUN_ID
 #  deploy:
